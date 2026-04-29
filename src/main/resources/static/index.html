@@ -735,7 +735,8 @@
     const ttsDetailEl = document.getElementById("tts-detail");
     const studioSection = document.getElementById("studio");
     let pollTimer = null;
-    let authToken = localStorage.getItem("pdfpodcast_token") || "";
+    // Don't persist auth across refresh. Users must click "Log in" to reveal Studio.
+    let authToken = "";
 
     loadScriptingStatus();
     loadTtsStatus();
@@ -795,14 +796,12 @@
         if (!response.ok) {
             loginStatusEl.textContent = "Login failed. Check your username/password.";
             authToken = "";
-            localStorage.removeItem("pdfpodcast_token");
             reflectAuthState();
             return false;
         }
 
         const data = await response.json();
         authToken = data.token;
-        localStorage.setItem("pdfpodcast_token", authToken);
         loginStatusEl.textContent = "Authenticated. Opening studio…";
         reflectAuthState();
         openStudio();
