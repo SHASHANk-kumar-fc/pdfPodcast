@@ -745,6 +745,7 @@
     const loginStatusEl = document.getElementById("login-status");
     const demoButton = document.getElementById("demo-button");
     const demoButton2 = document.getElementById("demo-button-2");
+    const navDemo = document.getElementById("nav-demo");
     const navStudio = document.getElementById("nav-studio");
     const statusEl = document.getElementById("job-status");
     const heroJobStatusEl = document.getElementById("hero-job-status");
@@ -771,6 +772,10 @@
 
     demoButton?.addEventListener("click", async () => runDemo());
     demoButton2?.addEventListener("click", async () => runDemo());
+    navDemo?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        await runDemo({ openFilePicker: false });
+    });
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -835,13 +840,14 @@
         return true;
     }
 
-    async function runDemo() {
+    async function runDemo(options = {}) {
+        const { openFilePicker = true } = options;
         // Demo = "log in and take me to the studio".
         if (!authToken) {
             const ok = await login();
             if (!ok) return;
         } else {
-            openStudio();
+            openStudio({ openFilePicker });
         }
     }
 
@@ -852,11 +858,21 @@
         loginStatusEl.textContent = authed ? "Authenticated. Open the studio below." : "Login required to access the studio.";
     }
 
-    function openStudio() {
+    function openStudio(options = {}) {
+        const { openFilePicker = true } = options;
         studioSection.hidden = false;
         navStudio.hidden = false;
         requestAnimationFrame(() => {
             location.hash = "#studio";
+            if (!openFilePicker) return;
+
+            // Best-effort: open the PDF chooser as part of the same UX.
+            // This may be blocked by the browser if not called from a direct user gesture.
+            const fileInput = form?.querySelector('input[type="file"][name="file"]');
+            if (fileInput) {
+                fileInput.focus();
+                setTimeout(() => fileInput.click(), 0);
+            }
         });
     }
 
