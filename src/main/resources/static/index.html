@@ -522,7 +522,6 @@
         </a>
         <div class="nav-actions">
             <a class="nav-link" id="nav-studio" href="#studio" hidden>Studio</a>
-            <a class="button button-primary button-compact" id="nav-demo" href="#demo">Demo</a>
         </div>
     </div>
 </header>
@@ -537,9 +536,6 @@
                     Turn long PDFs, research papers, and dense reports into engaging podcast-style conversations.
                     Consume knowledge while commuting, exercising, or resting your eyes.
                 </p>
-                <div class="cta-row">
-                    <a class="button button-secondary" href="#demo">Try demo first</a>
-                </div>
 
                 <div class="auth-card" style="margin: 34px auto 0; max-width: 720px; text-align: left;">
                     <form id="login-form" class="auth-grid">
@@ -555,13 +551,12 @@
                         </div>
                         <div class="form-actions">
                             <button class="button button-primary button-compact" type="submit">Log in</button>
-                            <button class="button button-secondary button-compact" id="demo-button" type="button">Demo</button>
                             <span class="helper-text" id="login-status">Login required to access the studio.</span>
                         </div>
                     </form>
                 </div>
 
-                <p class="sub-note">After login (or Demo), you’ll be taken to the studio to upload a PDF and generate your episode.</p>
+                <p class="sub-note">Log in to access the studio and generate your episode.</p>
             </div>
 
             <div class="status-strip">
@@ -577,22 +572,6 @@
                     <strong>Current job</strong>
                     <p id="hero-job-status" class="pill neutral">No job running</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="demo">
-        <div class="section-inner">
-            <div class="demo-card">
-                <div class="demo-icon">?</div>
-                <div class="demo-copy">
-                    <h2>Try the live demo</h2>
-                    <p>
-                        See PDF to Podcast convert a sample paper into a full episode with progress tracking,
-                        transcript preview, and audio playback.
-                    </p>
-                </div>
-                <button class="button button-primary button-compact" type="button" id="demo-button-2">Run demo</button>
             </div>
         </div>
     </section>
@@ -743,9 +722,6 @@
     const form = document.getElementById("podcast-form");
     const loginForm = document.getElementById("login-form");
     const loginStatusEl = document.getElementById("login-status");
-    const demoButton = document.getElementById("demo-button");
-    const demoButton2 = document.getElementById("demo-button-2");
-    const navDemo = document.getElementById("nav-demo");
     const navStudio = document.getElementById("nav-studio");
     const statusEl = document.getElementById("job-status");
     const heroJobStatusEl = document.getElementById("hero-job-status");
@@ -764,18 +740,10 @@
     loadScriptingStatus();
     loadTtsStatus();
     reflectAuthState();
-    openStudioOnLoad();
 
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         await login();
-    });
-
-    demoButton?.addEventListener("click", async () => runDemo());
-    demoButton2?.addEventListener("click", async () => runDemo());
-    navDemo?.addEventListener("click", async (event) => {
-        event.preventDefault();
-        await runDemo({ openFilePicker: false });
     });
 
     form.addEventListener("submit", async (event) => {
@@ -841,23 +809,10 @@
         return true;
     }
 
-    async function runDemo(options = {}) {
-        const { openFilePicker = true } = options;
-        // Demo = "log in and take me to the studio".
-        if (!authToken) {
-            const ok = await login();
-            if (!ok) return;
-        } else {
-            openStudio({ openFilePicker });
-        }
-    }
-
     function reflectAuthState() {
         const authed = Boolean(authToken);
-        // Keep the studio visible so the page looks the same on hosted envs (e.g. Render).
-        // Auth still gates the "Generate podcast" action in the submit handler.
-        navStudio.hidden = false;
-        studioSection.hidden = false;
+        navStudio.hidden = !authed;
+        studioSection.hidden = !authed;
         loginStatusEl.textContent = authed ? "Authenticated. Open the studio below." : "Login required to access the studio.";
     }
 
@@ -877,14 +832,6 @@
                 setTimeout(() => fileInput.click(), 0);
             }
         });
-    }
-
-    function openStudioOnLoad() {
-        const params = new URLSearchParams(location.search || "");
-        const wantsStudio = location.hash === "#studio" || params.get("studio") === "1";
-        if (wantsStudio) {
-            openStudio({ openFilePicker: false });
-        }
     }
 
     async function loadScriptingStatus() {
