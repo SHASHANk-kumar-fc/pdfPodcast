@@ -1,0 +1,8 @@
+target/
+.idea/
+out/
+data/
+*.iml
+src/main/java/com/pdfpodcast/.idea/
+src/main/java/com/pdfpodcast/out/
+.env
