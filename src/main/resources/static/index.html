@@ -764,6 +764,7 @@
     loadScriptingStatus();
     loadTtsStatus();
     reflectAuthState();
+    openStudioOnLoad();
 
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -853,8 +854,10 @@
 
     function reflectAuthState() {
         const authed = Boolean(authToken);
-        navStudio.hidden = !authed;
-        studioSection.hidden = !authed;
+        // Keep the studio visible so the page looks the same on hosted envs (e.g. Render).
+        // Auth still gates the "Generate podcast" action in the submit handler.
+        navStudio.hidden = false;
+        studioSection.hidden = false;
         loginStatusEl.textContent = authed ? "Authenticated. Open the studio below." : "Login required to access the studio.";
     }
 
@@ -874,6 +877,14 @@
                 setTimeout(() => fileInput.click(), 0);
             }
         });
+    }
+
+    function openStudioOnLoad() {
+        const params = new URLSearchParams(location.search || "");
+        const wantsStudio = location.hash === "#studio" || params.get("studio") === "1";
+        if (wantsStudio) {
+            openStudio({ openFilePicker: false });
+        }
     }
 
     async function loadScriptingStatus() {
