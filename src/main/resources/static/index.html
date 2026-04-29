@@ -738,8 +738,7 @@
     // Don't persist auth across refresh. Users must click "Log in" to reveal Studio.
     let authToken = "";
 
-    loadScriptingStatus();
-    loadTtsStatus();
+    refreshConfigStatus();
     reflectAuthState();
 
     loginForm.addEventListener("submit", async (event) => {
@@ -803,9 +802,22 @@
         const data = await response.json();
         authToken = data.token;
         loginStatusEl.textContent = "Authenticated. Opening studio…";
+        refreshConfigStatus();
         reflectAuthState();
         openStudio();
         return true;
+    }
+
+    function refreshConfigStatus() {
+        if (!authToken) {
+            scriptStatusEl.textContent = "Log in to check scripting config";
+            scriptStatusEl.className = "pill neutral";
+            ttsStatusEl.textContent = "Log in to check TTS config";
+            ttsStatusEl.className = "pill neutral";
+            return;
+        }
+        loadScriptingStatus();
+        loadTtsStatus();
     }
 
     function reflectAuthState() {
